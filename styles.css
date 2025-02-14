@@ -1,0 +1,519 @@
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+header {
+    background-color: #add8e6; /* Azul claro pastel */
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+nav ul li ul {
+    display: none;
+    position: absolute;
+    background-color: #add8e6; /* Azul claro pastel */
+    padding: 10px;
+    border-radius: 5px;
+}
+
+nav ul li:hover ul {
+    display: block;
+}
+
+nav ul li ul li {
+    margin: 5px 0;
+}
+
+nav ul li ul li a {
+    color: white;
+}
+
+main {
+    padding: 20px;
+}
+
+.formulario {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.formulario h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.formulario label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.formulario input,
+.formulario select,
+.formulario textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.formulario input, .formulario select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.formulario button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.formulario button:hover {
+    background-color: #45a049;
+}
+
+.alerta {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 20px;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.alerta.show {
+    display: block;
+    opacity: 1;
+}
+
+.historial {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.historial h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.paciente {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: #f9f9f9;
+}
+
+.paciente p {
+    margin: 5px 0;
+}
+
+.paciente button {
+    margin-right: 10px;
+    margin-top: 10px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.paciente button.eliminar {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.paciente button.categorizar {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.paciente button.sesion {
+    background-color: #4d94ff;
+    color: white;
+}
+
+.opciones-categoria {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+.opciones-categoria button {
+    margin: 5px 0;
+    padding: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.opciones-categoria button.leve {
+    background-color: #b3e6b3; /* Verde pastel */
+    color: white;
+}
+
+.opciones-categoria button.intermedio {
+    background-color: #ffffb3; /* Amarillo pastel */
+    color: black;
+}
+
+.opciones-categoria button.severo {
+    background-color: #ffb3b3; /* Rojo pastel */
+    color: white;
+}
+
+.nueva-sesion {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.nueva-sesion h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.nueva-sesion #datosPaciente {
+    margin-bottom: 20px;
+}
+
+.nueva-sesion textarea {
+    width: 100%;
+    height: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    resize: none;
+}
+
+.nueva-sesion .botones {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.nueva-sesion .botones button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.nueva-sesion .botones #guardarSesion {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.nueva-sesion .botones #cancelarSesion {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.nueva-sesion .botones #limpiarSesion {
+    background-color: #ffcc00;
+    color: black;
+}
+
+.notificacion {
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 20px;
+    display: none;
+    font-size: 16px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.notificacion.show {
+    display: block;
+    opacity: 1;
+}
+
+.notificacion.exito {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.notificacion.error {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.sesion {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sesion p {
+    margin: 5px 0;
+    color: #333;
+}
+
+.sesion button {
+    margin-right: 10px;
+    margin-top: 10px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.sesion button.ver {
+    background-color: #4CAF50;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.sesion button.ver:hover {
+    background-color: #45a049;
+}
+
+.sesion button.eliminar {
+    background-color: #ff4d4d;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.sesion button.eliminar:hover {
+    background-color: #e60000;
+}
+
+.sesion button.descargar {
+    background-color: #4d94ff;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.sesion button.descargar:hover {
+    background-color: #1a75ff;
+}
+
+.pagos {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.pagos h1, .pagos h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.pagos button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.pagos button:hover {
+    background-color: #45a049;
+}
+
+.registros-pago {
+    margin-top: 20px;
+}
+
+.pago {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pago p {
+    margin: 5px 0;
+    color: #333;
+}
+
+.pago button {
+    margin-right: 10px;
+    margin-top: 10px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.pago button.descargar {
+    background-color: #4d94ff;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.pago button.descargar:hover {
+    background-color: #1a75ff;
+}
+
+.pago button.eliminar {
+    background-color: #ff4d4d;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.pago button.eliminar:hover {
+    background-color: #e60000;
+}
+
+.estadisticas {
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.estadisticas h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.grafico-container {
+    margin: 0 auto;
+    max-width: 600px;
+}
+
+.grafico-container canvas {
+    width: 100%;
+    height: 400px;
+}
+
+.bienvenida {
+    font-size: 36px;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.portada {
+    text-align: center;
+    padding: 20px;
+}
+
+.manual {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.manual h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.manual h2 {
+    margin-top: 20px;
+    font-size: 20px;
+    color: #333;
+}
+
+.manual p, .manual ol {
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #555;
+}
+
+.manual button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.manual button:hover {
+    background-color: #45a049;
+}
