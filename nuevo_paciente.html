@@ -12,20 +12,14 @@
         <nav>
             <ul>
                 <li><a href="index.html">Inicio</a></li>
-                <li><a href="#">Pacientes</a>
-                    <ul>
-                        <li><a href="nuevo_paciente.html">Nuevo Paciente</a></li>
-                        <li><a href="historial_pacientes.html">Historial de pacientes</a></li>
-                    </ul>
-                </li>
-                <li><a href="#">Sesiones</a>
-                    <ul>
-                        <li><a href="nueva_sesion.html">Nueva Sesión</a></li>
-                        <li><a href="historial_sesiones.html">Historial de sesiones</a></li>
-                    </ul>
-                </li>
+                <li><a href="nuevo_paciente.html">Nuevo Paciente</a></li>
+                <li><a href="historial_pacientes.html">Historial de pacientes</a></li>
+                <li><a href="nueva_sesion.html">Nueva Sesión</a></li>
+                <li><a href="historial_sesiones.html">Historial de sesiones</a></li>
                 <li><a href="pagos.html">Pagos</a></li>
                 <li><a href="estadisticas.html">Estadísticas</a></li>
+                <li><a href="manual.html">Manual de uso</a></li>
+                <li><a href="recordatorios.html">Recordatorios</a></li>
             </ul>
         </nav>
     </header>
@@ -53,10 +47,7 @@
                 </select>
                 
                 <label for="nacionalidad">Nacionalidad:</label>
-                <select id="nacionalidad" name="nacionalidad" required>
-                    <option value="chileno">Chileno/a</option>
-                    <!-- Agregar más países aquí -->
-                </select>
+                <input type="text" id="nacionalidad" name="nacionalidad" required>
                 
                 <label for="estadoCivil">Estado Civil:</label>
                 <select id="estadoCivil" name="estadoCivil" required>
@@ -79,7 +70,7 @@
                 
                 <button type="submit">Registrar</button>
             </form>
-            <div id="alerta" class="alerta" style="display:none;">Paciente registrado con éxito</div>
+            <div id="alerta" class="alerta">Paciente registrado con éxito</div>
         </section>
     </main>
     <script src="scripts.js"></script>

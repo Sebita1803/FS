@@ -1,4 +1,37 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Redirigir a index.html si se accede a la raíz del servidor
+    if (window.location.pathname === '/') {
+        window.location.href = 'http://127.0.0.1:5500/index.html#';
+    }
+    // Mostrar la introducción con animación
+    const introduccion = document.querySelector('.introduccion');
+    if (introduccion) {
+        setTimeout(() => {
+            introduccion.classList.add('show');
+        }, 500);
+    }
+    // Generar el gráfico llamativo
+    if (window.location.pathname.endsWith('index.html')) {
+        generarGraficoResumen();
+        mostrarNotificacionesPrioridad();
+        configurarIntervalosNotificaciones();
+    }
+    // Inicializar el calendario en la página de recordatorios
+    if (window.location.pathname.endsWith('recordatorios.html')) {
+        inicializarCalendario();
+        document.getElementById('nuevoRecordatorioBtn').addEventListener('click', mostrarFormularioRecordatorio);
+        document.getElementById('guardarRecordatorioBtn').addEventListener('click', guardarRecordatorio);
+        document.getElementById('cancelarRecordatorioBtn').addEventListener('click', cancelarRecordatorio);
+        cargarRecordatorios();
+    }
+    // Inicializar el gráfico contable en la página de pagos
+    if (window.location.pathname.endsWith('pagos.html')) {
+        inicializarGraficoContable();
+        document.getElementById('nuevoPagoBtn').addEventListener('click', mostrarFormularioPago);
+        document.getElementById('cancelarPagoBtn').addEventListener('click', cancelarPago);
+        document.getElementById('guardarPagoBtn').addEventListener('click', guardarPago);
+        cargarPagos();
+    }
     // Aquí se pueden agregar las funciones interactivas y animaciones
     if (window.location.pathname.endsWith('historial_pacientes.html')) {
         cargarPacientes();
@@ -33,6 +66,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (window.location.pathname.endsWith('manual.html')) {
         document.getElementById('descargarManualBtn').addEventListener('click', descargarManual);
+    }
+
+    if (window.location.pathname.endsWith('recordatorios.html')) {
+        document.getElementById('nuevoRecordatorioBtn').addEventListener('click', mostrarFormularioRecordatorio);
+        document.getElementById('guardarRecordatorioBtn').addEventListener('click', guardarRecordatorio);
+        document.getElementById('cancelarRecordatorioBtn').addEventListener('click', cancelarRecordatorio);
+        cargarRecordatorios();
     }
 });
 
@@ -94,11 +134,13 @@ document.getElementById('nuevoPacienteForm').addEventListener('submit', function
 function cargarPacientes() {
     const pacientes = JSON.parse(localStorage.getItem('pacientes')) || [];
     const pacientesContainer = document.getElementById('pacientesContainer');
+    pacientesContainer.innerHTML = ''; // Limpiar el contenedor antes de agregar nuevos pacientes
     
     pacientes.forEach((paciente, index) => {
         const pacienteDiv = document.createElement('div');
         pacienteDiv.className = 'paciente';
         pacienteDiv.style.backgroundColor = paciente.categoria;
+        pacienteDiv.dataset.index = index;
         
         pacienteDiv.innerHTML = `
             <p><strong>Nombre Completo:</strong> ${paciente.nombre}</p>
@@ -131,8 +173,14 @@ function eliminarPaciente(index) {
     let pacientes = JSON.parse(localStorage.getItem('pacientes')) || [];
     pacientes.splice(index, 1);
     localStorage.setItem('pacientes', JSON.stringify(pacientes));
-    alert('Eliminado con éxito');
-    location.reload();
+    
+    // Eliminar el paciente del DOM
+    const pacienteDiv = document.querySelector(`.paciente[data-index="${index}"]`);
+    if (pacienteDiv) {
+        pacienteDiv.remove();
+    }
+    
+    mostrarNotificacion('Eliminado con éxito', 'error');
 }
 
 // Función para mostrar las opciones de categoría
@@ -157,13 +205,24 @@ function categorizarPaciente(index, categoria) {
     }
     pacientes[index].categoria = color;
     localStorage.setItem('pacientes', JSON.stringify(pacientes));
-    location.reload();
+    cargarPacientes();
 }
 
 // Función para redirigir a la página de nueva sesión
 function redirigirNuevaSesion(index) {
     localStorage.setItem('pacienteSeleccionado', index);
     window.location.href = 'nueva_sesion.html';
+}
+
+function mostrarNotificacion(mensaje, tipo) {
+    const notificacion = document.getElementById('notificacion');
+    notificacion.textContent = mensaje;
+    notificacion.className = `notificacion ${tipo}`;
+    notificacion.style.display = 'block';
+
+    setTimeout(function() {
+        notificacion.style.display = 'none';
+    }, 3000);
 }
 
 // Función para cargar los datos del paciente seleccionado en la página de nueva sesión
@@ -238,7 +297,8 @@ function limpiarSesion() {
 function cargarSesiones() {
     const sesiones = JSON.parse(localStorage.getItem('sesiones')) || [];
     const sesionesContainer = document.getElementById('sesionesContainer');
-    
+    sesionesContainer.innerHTML = ''; // Limpiar el contenedor antes de agregar nuevas sesiones
+
     sesiones.forEach((sesion, index) => {
         const sesionDiv = document.createElement('div');
         sesionDiv.className = 'sesion';
@@ -279,8 +339,20 @@ function eliminarSesion(index) {
     let sesiones = JSON.parse(localStorage.getItem('sesiones')) || [];
     sesiones.splice(index, 1);
     localStorage.setItem('sesiones', JSON.stringify(sesiones));
-    alert('Registro eliminado');
-    location.reload();
+    
+    mostrarNotificacion('Eliminado con éxito', 'error');
+    cargarSesiones();
+}
+
+function mostrarNotificacion(mensaje, tipo) {
+    const notificacion = document.getElementById('notificacion');
+    notificacion.textContent = mensaje;
+    notificacion.className = `notificacion ${tipo}`;
+    notificacion.style.display = 'block';
+
+    setTimeout(function() {
+        notificacion.style.display = 'none';
+    }, 3000);
 }
 
 // Función para descargar una sesión como PDF
@@ -308,7 +380,7 @@ function descargarSesion(index) {
     doc.text(sesion.anotaciones, 10, 140, { maxWidth: 180 });
     doc.text(`Fecha de Generación del PDF: ${fechaActual}`, 10, 150);
 
-    doc.save(`Sesion_${sesion.paciente.nombre}.pdf`);
+    doc.save(`Sesion_${sesion.paciente.nombre.replace(/ /g, "_")}_${sesion.fecha.replace(/[:/]/g, "-")}.pdf`);
 }
 
 // Generar un número de orden de pago aleatorio de 6 dígitos
@@ -393,17 +465,8 @@ function eliminarPago(index) {
     pagos.splice(index, 1);
     localStorage.setItem('pagos', JSON.stringify(pagos));
     
-    const notificacion = document.getElementById('notificacion');
-    notificacion.textContent = 'Pago eliminado';
-    notificacion.classList.add('show');
-    notificacion.style.backgroundColor = '#ff4d4d';
-    
-    // Actualizar la lista de pagos inmediatamente
+    mostrarNotificacion('Pago eliminado', 'error');
     cargarPagos();
-    
-    setTimeout(function() {
-        notificacion.classList.remove('show');
-    }, 3000);
 }
 
 // Función para descargar un comprobante de pago como PDF
@@ -661,28 +724,68 @@ function generarGraficoResumen() {
     const totalPagos = pagosData.length;
 
     new Chart(ctxResumen, {
-        type: 'pie',
+        type: 'bar',
         data: {
-            labels: ['Total Pacientes', 'Leve', 'Intermedio', 'Severo', 'Total Sesiones', 'Total Pagos'],
-            datasets: [{
-                label: 'Resumen',
-                data: [totalPacientes, categorias.leve, categorias.intermedio, categorias.severo, totalSesiones, totalPagos],
-                backgroundColor: ['#b3e6b3', '#ffffb3', '#ffb3b3', '#cce5ff', '#ffccff', '#ffebcc'],
-                borderColor: ['#8BC34A', '#FFEB3B', '#F44336', '#1E88E5', '#E91E63', '#FF9800'],
-                borderWidth: 1
-            }]
+            labels: ['Pacientes', 'Categorizaciones', 'Sesiones', 'Pagos'],
+            datasets: [
+                {
+                    label: 'Total Pacientes',
+                    data: [totalPacientes, 0, 0, 0],
+                    backgroundColor: '#b3e6b3',
+                    borderColor: '#8BC34A',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Leve',
+                    data: [0, categorias.leve, 0, 0],
+                    backgroundColor: '#cce5ff',
+                    borderColor: '#1E88E5',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Intermedio',
+                    data: [0, categorias.intermedio, 0, 0],
+                    backgroundColor: '#ffffb3',
+                    borderColor: '#FFEB3B',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Severo',
+                    data: [0, categorias.severo, 0, 0],
+                    backgroundColor: '#ffb3b3',
+                    borderColor: '#F44336',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Total Sesiones',
+                    data: [0, 0, totalSesiones, 0],
+                    backgroundColor: '#ffccff',
+                    borderColor: '#E91E63',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Total Pagos',
+                    data: [0, 0, 0, totalPagos],
+                    backgroundColor: '#ffebcc',
+                    borderColor: '#FF9800',
+                    borderWidth: 1
+                }
+            ]
         },
         options: {
             responsive: true,
             animation: {
-                duration: 1500,
+                duration: 2000,
                 easing: 'easeOutBounce'
             },
             plugins: {
                 legend: {
                     display: true,
                     labels: {
-                        color: '#333'
+                        color: '#333',
+                        font: {
+                            size: 14
+                        }
                     }
                 },
                 tooltip: {
@@ -692,6 +795,26 @@ function generarGraficoResumen() {
                     bodyColor: '#fff',
                     borderColor: '#fff',
                     borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    ticks: {
+                        color: '#333',
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                y: {
+                    stacked: true,
+                    ticks: {
+                        color: '#333',
+                        font: {
+                            size: 14
+                        }
+                    }
                 }
             }
         }
@@ -704,9 +827,9 @@ function descargarManual() {
     const doc = new jsPDF();
     doc.setFontSize(12);
     doc.text('Manual de Uso de FloreceSanandoApp', 10, 10);
-    doc.text('Introducción 🌸', 10, 20);
+    doc.text('Introducción', 10, 20);
     doc.text('Bienvenido al manual de uso de FloreceSanandoApp. Aquí encontrarás toda la información necesaria para utilizar la plataforma de manera eficiente.', 10, 30, { maxWidth: 180 });
-    doc.text('Registro de Pacientes 📝', 10, 50);
+    doc.text('Registro de Pacientes', 10, 50);
     doc.text('Para registrar un nuevo paciente, sigue estos pasos:', 10, 60);
     doc.text('1. Haz clic en "Pacientes" en el menú principal.', 10, 70);
     doc.text('2. Selecciona "Nuevo Paciente".', 10, 80);
@@ -724,7 +847,7 @@ function descargarManual() {
     doc.text('- Correo Electrónico: El correo electrónico del paciente.', 10, 200);
     doc.text('- Diagnóstico de Ingreso: El diagnóstico inicial del paciente (opcional).', 10, 210);
     doc.text('- Observación Inicial: Cualquier observación inicial sobre el paciente (opcional).', 10, 220);
-    doc.text('Gestión de Pacientes 👥', 10, 230);
+    doc.text('Gestión de Pacientes', 10, 230);
     doc.text('Para gestionar los pacientes registrados, sigue estos pasos:', 10, 240);
     doc.text('1. Haz clic en "Pacientes" en el menú principal.', 10, 250);
     doc.text('2. Selecciona "Historial de pacientes".', 10, 260);
@@ -732,7 +855,7 @@ function descargarManual() {
     doc.text('- Eliminar: Haz clic en el botón "Eliminar" para eliminar un paciente.', 10, 280);
     doc.text('- Categorizar: Haz clic en el botón "Categorizar" para asignar una categoría al paciente (leve, intermedio, severo).', 10, 290);
     doc.text('- Nueva Sesión: Haz clic en el botón "Nueva Sesión" para registrar una nueva sesión para el paciente.', 10, 300);
-    doc.text('Gestión de Sesiones 🗓️', 10, 310);
+    doc.text('Gestión de Sesiones', 10, 310);
     doc.text('Para gestionar las sesiones, sigue estos pasos:', 10, 320);
     doc.text('1. Haz clic en "Sesiones" en el menú principal.', 10, 330);
     doc.text('2. Selecciona "Nueva Sesión" para registrar una nueva sesión.', 10, 340);
@@ -758,7 +881,7 @@ function descargarManual() {
     doc.text('- Ver: Haz clic en el botón "Ver" para ver los detalles de la sesión.', 10, 540);
     doc.text('- Eliminar: Haz clic en el botón "Eliminar" para eliminar una sesión.', 10, 550);
     doc.text('- Descargar: Haz clic en el botón "Descargar" para descargar un resumen de la sesión en PDF.', 10, 560);
-    doc.text('Gestión de Pagos 💳', 10, 570);
+    doc.text('Gestión de Pagos', 10, 570);
     doc.text('Para gestionar los pagos, sigue estos pasos:', 10, 580);
     doc.text('1. Haz clic en "Pagos" en el menú principal.', 10, 590);
     doc.text('2. Selecciona "Nuevo Pago" para registrar un nuevo pago.', 10, 600);
@@ -776,7 +899,7 @@ function descargarManual() {
     doc.text('En la lista de pagos, puedes realizar las siguientes acciones:', 10, 720);
     doc.text('- Descargar: Haz clic en el botón "Descargar" para descargar un comprobante de pago en PDF.', 10, 730);
     doc.text('- Eliminar: Haz clic en el botón "Eliminar" para eliminar un pago.', 10, 740);
-    doc.text('Estadísticas 📊', 10, 750);
+    doc.text('Estadísticas', 10, 750);
     doc.text('Para ver las estadísticas, sigue estos pasos:', 10, 760);
     doc.text('1. Haz clic en "Estadísticas" en el menú principal.', 10, 770);
     doc.text('2. Revisa los gráficos interactivos para obtener información detallada.', 10, 780);
@@ -785,4 +908,325 @@ function descargarManual() {
     doc.text('- Gráfico de Sesiones: Muestra la cantidad de sesiones por paciente.', 10, 810);
     doc.text('- Gráfico de Contabilidad: Muestra estadísticas contables como el total de pagos, monto total, monto promedio, monto máximo y monto mínimo.', 10, 820);
     doc.save('Manual_de_Uso_FloreceSanandoApp.pdf');
+}
+
+function descargarPDF(nombrePaciente, fechaSesion) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text("Historial de Sesión", 20, 20);
+    doc.setFontSize(12);
+    doc.text(`Nombre del Paciente: ${nombrePaciente}`, 20, 30);
+    doc.text(`Fecha de la Sesión: ${fechaSesion}`, 20, 40);
+    doc.text("Detalles de la sesión:", 20, 50);
+    doc.text("Aquí puedes agregar más detalles de la sesión...", 20, 60);
+
+    doc.save(`Sesion_${nombrePaciente.replace(/ /g, "_")}_${fechaSesion.replace(/\//g, "-")}.pdf`);
+}
+
+function mostrarFormularioRecordatorio() {
+    document.getElementById('nuevoRecordatorioForm').style.display = 'block';
+}
+
+function cancelarRecordatorio() {
+    document.getElementById('nuevoRecordatorioForm').style.display = 'none';
+}
+
+function guardarRecordatorio() {
+    const texto = document.getElementById('textoRecordatorio').value;
+    const fecha = document.getElementById('fechaRecordatorio').value;
+
+    const recordatorio = {
+        texto,
+        fecha,
+        prioridad: 'baja' // Prioridad por defecto
+    };
+
+    let recordatorios = JSON.parse(localStorage.getItem('recordatorios')) || [];
+    recordatorios.push(recordatorio);
+    localStorage.setItem('recordatorios', JSON.stringify(recordatorios));
+
+    mostrarNotificacion('Recordatorio guardado', 'success');
+
+    setTimeout(function() {
+        document.getElementById('nuevoRecordatorioForm').style.display = 'none';
+    }, 3000);
+
+    cargarRecordatorios();
+    actualizarCalendario();
+}
+
+function cargarRecordatorios() {
+    const recordatorios = JSON.parse(localStorage.getItem('recordatorios')) || [];
+    const registroRecordatoriosContainer = document.getElementById('registroRecordatoriosContainer');
+    registroRecordatoriosContainer.innerHTML = ''; // Limpiar el contenedor antes de agregar nuevos recordatorios
+
+    recordatorios.forEach((recordatorio, index) => {
+        const recordatorioDiv = document.createElement('div');
+        recordatorioDiv.className = 'recordatorio';
+        recordatorioDiv.style.backgroundColor = obtenerColorPrioridad(recordatorio.prioridad);
+        recordatorioDiv.innerHTML = `
+            <p>${recordatorio.texto}</p>
+            <p>${recordatorio.fecha}</p>
+            <button class="eliminar" onclick="eliminarRecordatorio(${index})">Eliminar</button>
+            <div class="prioridad-botones">
+                <button class="prioridad-alta" onclick="cambiarPrioridad(${index}, 'alta')">Prioridad Alta</button>
+                <button class="prioridad-media" onclick="cambiarPrioridad(${index}, 'media')">Prioridad Media</button>
+                <button class="prioridad-baja" onclick="cambiarPrioridad(${index}, 'baja')">Prioridad Baja</button>
+            </div>
+        `;
+        registroRecordatoriosContainer.appendChild(recordatorioDiv);
+        setTimeout(() => {
+            recordatorioDiv.classList.add('show');
+        }, 100);
+    });
+}
+
+function eliminarRecordatorio(index) {
+    let recordatorios = JSON.parse(localStorage.getItem('recordatorios')) || [];
+    recordatorios.splice(index, 1);
+    localStorage.setItem('recordatorios', JSON.stringify(recordatorios));
+    mostrarNotificacion('Recordatorio eliminado', 'error');
+    cargarRecordatorios();
+    actualizarCalendario();
+}
+
+function cambiarPrioridad(index, prioridad) {
+    let recordatorios = JSON.parse(localStorage.getItem('recordatorios')) || [];
+    recordatorios[index].prioridad = prioridad;
+    localStorage.setItem('recordatorios', JSON.stringify(recordatorios));
+    cargarRecordatorios();
+    actualizarCalendario();
+}
+
+function obtenerColorPrioridad(prioridad) {
+    switch (prioridad) {
+        case 'alta':
+            return '#ff4d4d'; // Rojo
+        case 'media':
+            return '#ffcc00'; // Amarillo
+        case 'baja':
+            return '#b3e6b3'; // Verde
+        default:
+            return '#ffffff'; // Blanco por defecto
+    }
+}
+
+function mostrarNotificacion(mensaje, tipo) {
+    const notificacion = document.getElementById('notificacion');
+    notificacion.textContent = mensaje;
+    notificacion.className = `notificacion ${tipo}`;
+    notificacion.style.display = 'block';
+
+    setTimeout(function() {
+        notificacion.style.display = 'none';
+    }, 3000);
+}
+
+function mostrarNotificacionesPrioridad() {
+    const recordatorios = JSON.parse(localStorage.getItem('recordatorios')) || [];
+    const recordatoriosAlta = recordatorios.filter(recordatorio => recordatorio.prioridad === 'alta');
+    const recordatoriosMedia = recordatorios.filter(recordatorio => recordatorio.prioridad === 'media');
+    const recordatoriosBaja = recordatorios.filter(recordatorio => recordatorio.prioridad === 'baja');
+
+    if (recordatoriosAlta.length > 0) {
+        mostrarNotificacionTemporal(recordatoriosAlta[0].texto, 'alta', 7000);
+    }
+    if (recordatoriosMedia.length > 0) {
+        mostrarNotificacionTemporal(recordatoriosMedia[0].texto, 'media', 5000);
+    }
+    if (recordatoriosBaja.length > 0) {
+        mostrarNotificacionTemporal(recordatoriosBaja[0].texto, 'baja', 3000);
+    }
+}
+
+function mostrarNotificacionTemporal(texto, prioridad, duracion) {
+    const notificacionesContainer = document.getElementById('notificaciones');
+    const notificacion = document.createElement('div');
+    notificacion.className = 'notificacion';
+    notificacion.style.backgroundColor = obtenerColorPrioridad(prioridad);
+    notificacion.textContent = `Recordatorio de ${prioridad} prioridad: ${texto}`;
+    notificacionesContainer.appendChild(notificacion);
+
+    setTimeout(() => {
+        notificacion.classList.add('show');
+    }, 100);
+
+    setTimeout(() => {
+        notificacion.classList.remove('show');
+        setTimeout(() => {
+            notificacionesContainer.removeChild(notificacion);
+        }, 500);
+    }, duracion);
+}
+
+function configurarIntervalosNotificaciones() {
+    setInterval(() => {
+        const recordatoriosAlta = JSON.parse(localStorage.getItem('recordatorios')) || [];
+        const alta = recordatoriosAlta.filter(recordatorio => recordatorio.prioridad === 'alta');
+        if (alta.length > 0) {
+            mostrarNotificacionTemporal(alta[0].texto, 'alta', 7000);
+        }
+    }, 180000); // 3 minutos
+
+    setInterval(() => {
+        const recordatoriosMedia = JSON.parse(localStorage.getItem('recordatorios')) || [];
+        const media = recordatoriosMedia.filter(recordatorio => recordatorio.prioridad === 'media');
+        if (media.length > 0) {
+            mostrarNotificacionTemporal(media[0].texto, 'media', 5000);
+        }
+    }, 240000); // 4 minutos
+
+    setInterval(() => {
+        const recordatoriosBaja = JSON.parse(localStorage.getItem('recordatorios')) || [];
+        const baja = recordatoriosBaja.filter(recordatorio => recordatorio.prioridad === 'baja');
+        if (baja.length > 0) {
+            mostrarNotificacionTemporal(baja[0].texto, 'baja', 3000);
+        }
+    }, 300000); // 5 minutos
+}
+
+function inicializarCalendario() {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: obtenerEventosCalendario(),
+        eventColor: '#378006',
+        editable: true,
+        droppable: true,
+        eventDrop: function(info) {
+            actualizarFechaRecordatorio(info.event);
+        }
+    });
+    calendar.render();
+}
+
+function obtenerEventosCalendario() {
+    const recordatorios = JSON.parse(localStorage.getItem('recordatorios')) || [];
+    return recordatorios.map(recordatorio => ({
+        title: recordatorio.texto,
+        start: recordatorio.fecha,
+        backgroundColor: obtenerColorPrioridad(recordatorio.prioridad)
+    }));
+}
+
+function actualizarCalendario() {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = FullCalendar.getCalendar(calendarEl);
+    calendar.removeAllEvents();
+    calendar.addEventSource(obtenerEventosCalendario());
+}
+
+function actualizarFechaRecordatorio(event) {
+    const recordatorios = JSON.parse(localStorage.getItem('recordatorios')) || [];
+    const recordatorio = recordatorios.find(r => r.texto === event.title);
+    if (recordatorio) {
+        recordatorio.fecha = event.startStr;
+        localStorage.setItem('recordatorios', JSON.stringify(recordatorios));
+        mostrarNotificacion('Fecha de recordatorio actualizada', 'success');
+    }
+}
+
+function inicializarGraficoContable() {
+    const ctx = document.getElementById('graficoContable').getContext('2d');
+    const pagos = JSON.parse(localStorage.getItem('pagos')) || [];
+    const montos = pagos.map(pago => pago.monto);
+    const totalPagos = montos.length;
+    const montoTotal = montos.reduce((acc, monto) => acc + monto, 0);
+    const montoPromedio = montoTotal / totalPagos;
+    const montoMaximo = Math.max(...montos);
+    const montoMinimo = Math.min(...montos);
+
+    const data = {
+        labels: ['Total Pagos', 'Monto Total', 'Monto Promedio', 'Monto Máximo', 'Monto Mínimo'],
+        datasets: [{
+            label: 'Estadísticas Contables',
+            data: [totalPagos, montoTotal, montoPromedio, montoMaximo, montoMinimo],
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(75, 192, 192, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    const options = {
+        responsive: true,
+        animation: {
+            duration: 1500,
+            easing: 'easeOutBounce'
+        },
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    color: '#333'
+                }
+            },
+            tooltip: {
+                enabled: true,
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#fff',
+                borderWidth: 1
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    color: '#333'
+                }
+            },
+            x: {
+                ticks: {
+                    color: '#333'
+                }
+            }
+        }
+    };
+
+    const graficoContable = new Chart(ctx, {
+        type: 'bar',
+        data: data,
+        options: options
+    });
+
+    // Actualizar el gráfico en tiempo real
+    setInterval(() => {
+        const pagosActualizados = JSON.parse(localStorage.getItem('pagos')) || [];
+        const montosActualizados = pagosActualizados.map(pago => pago.monto);
+        const totalPagosActualizados = montosActualizados.length;
+        const montoTotalActualizado = montosActualizados.reduce((acc, monto) => acc + monto, 0);
+        const montoPromedioActualizado = montoTotalActualizado / totalPagosActualizados;
+        const montoMaximoActualizado = Math.max(...montosActualizados);
+        const montoMinimoActualizado = Math.min(...montosActualizados);
+
+        graficoContable.data.datasets[0].data = [
+            totalPagosActualizados,
+            montoTotalActualizado,
+            montoPromedioActualizado,
+            montoMaximoActualizado,
+            montoMinimoActualizado
+        ];
+        graficoContable.update();
+    }, 5000); // Actualizar cada 5 segundos
 }
